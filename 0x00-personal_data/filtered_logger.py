@@ -9,6 +9,9 @@ import logging
 import re
 from typing import List
 
+# Constant for PII fields
+PII_FIELDS: tuple = ("email", "ssn", "password", "phone", "ip")
+
 
 def filter_datum(fields: List[str], redaction: str, message: str,
                  separator: str) -> str:
@@ -25,6 +28,7 @@ class RedactingFormatter(logging.Formatter):
 
     REDACTION = "***"
     FORMAT = "[HOLBERTON] %(name)s %(levelname)s %(asctime)-15s: %(message)s"
+    SEPARATOR = ";"
 
     def __init__(self, fields: List[str]):
         super(RedactingFormatter, self).__init__(self.FORMAT)
@@ -32,12 +36,9 @@ class RedactingFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         """Format the log record with redacted fields."""
-        record.msg = filter_datum(self.fields, self.REDACTION, record.msg, ";")
+        record.msg = filter_datum(self.fields, self.REDACTION, record.msg,
+                                  self.SEPARATOR)
         return super().format(record)
-
-
-# Constant for PII fields
-PII_FIELDS: tuple = ("email", "ssn", "password", "phone", "last_login")
 
 
 def get_logger() -> logging.Logger:
@@ -57,38 +58,3 @@ def get_logger() -> logging.Logger:
     logger.addHandler(handler)
 
     return logger
-
-
-def get_db():
-    """
-    Connect to the MySQL database and return the connection object.
-
-    Returns:
-        mysql.connector.connection.MySQLConnection: Connection object
-        to database.
-
-    Raises:
-        Error: If unable to connect to the database.
-    """
-    try:
-        username = os.getenv('PERSONAL_DATA_DB_USERNAME', 'root')
-        password = os.getenv('PERSONAL_DATA_DB_PASSWORD', '')
-        host = os.getenv('PERSONAL_DATA_DB_HOST', 'localhost')
-        database = os.getenv('PERSONAL_DATA_DB_NAME')
-
-        connection = mysql.connector.connect(
-            user=username,
-            password=password,
-            host=host,
-            database=database
-        )
-
-        if connection.is_connected():
-            print("Successfully connected to the database.")
-            return connection
-
-    except Error as err:
-        print(f"Error: {err}")
-        raise
-
-    return None  # In case the connection fails
