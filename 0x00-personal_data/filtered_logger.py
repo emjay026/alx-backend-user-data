@@ -9,17 +9,15 @@ import logging
 import re
 from typing import List
 
-import os
-import mysql.connector
-from mysql.connector import Error
-
 
 def filter_datum(fields: List[str], redaction: str, message: str,
                  separator: str) -> str:
     """Obfuscates specified fields in log message with a redaction string."""
-    return re.sub(f'({"|".join(map(re.escape, fields))})=[^;]*',
-                  lambda m: f"{m.group(0).split('=')[0]}={redaction}",
-                  message)
+    return re.sub(
+        rf'({"|".join(map(re.escape, fields))})=[^ {separator}]*',
+        lambda m: f"{m.group(0).split('=')[0]}={redaction}",
+        message
+    )
 
 
 class RedactingFormatter(logging.Formatter):
