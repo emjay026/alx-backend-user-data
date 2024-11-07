@@ -10,7 +10,7 @@ import re
 from typing import List
 
 # Constant for PII fields
-PII_FIELDS: tuple = ("email", "ssn", "password", "phone", "ip")
+PII_FIELDS: tuple = ("name","email", "ssn", "password", "phone")
 
 
 def filter_datum(fields: List[str], redaction: str, message: str,
