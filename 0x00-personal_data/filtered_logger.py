@@ -72,11 +72,6 @@ def get_db():
     host = os.getenv('PERSONAL_DATA_DB_HOST', 'localhost')
     database = os.getenv('PERSONAL_DATA_DB_NAME')
 
-    # Check if the database name is set
-    if not database:
-        raise ValueError(
-            "The environment variable PERSONAL_DATA_DB_NAME is not set.")
-
     try:
         # Create a connection to the database
         connection = mysql.connector.connect(
@@ -91,3 +86,54 @@ def get_db():
 
     except Error as e:
         return None
+
+
+def main():
+    """Main function to retrieve and display user data in filtered format."""
+    db_connection = get_db()
+
+    if db_connection:
+        cursor = db_connection.cursor()
+        cursor.execute("SELECT * FROM users;")  # Query to retrieve all users
+        rows = cursor.fetchall()
+
+        # Define the filtered fields that need to be redacted
+        filtered_fields = ['name', 'email', 'phone', 'ssn', 'password']
+        redaction_format = "[HOLBERTON] user_data INFO {}: {};"
+
+        # Iterate through each row
+        for row in rows:
+            # Assuming row structure has the necessary columns:
+            # This is a placeholder for all user data; adapt as necessary
+            user_data = {
+                'name': row[0],  # Assuming these correspond to correct index
+                'email': row[1],
+                'phone': row[2],
+                'ssn': row[3],
+                'password': row[4],
+                'ip': row[5],
+                'last_login': row[6],
+                'user_agent': row[7],
+            }
+
+            # Format the time for demo purposes (replace with actual timestamp)
+            timestamp = "2023-10-01 10:10:10,000"  # Placeholder timestamp.
+
+            # Prepare message for redaction
+            message = "; ".join(
+                f"{key}={user_data[key]}" for key in user_data.keys()
+            )
+
+            # Redact sensitive data
+            redacted_message = filter_datum(
+                filtered_fields, "***", message, ";")
+
+            # Print final formatted message
+            print(redaction_format.format(timestamp, redacted_message))
+
+        cursor.close()
+        db_connection.close()
+
+
+if __name__ == "__main__":
+    main()
