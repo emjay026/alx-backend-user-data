@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-This module contains a function to obfuscate log messages by redacting 
+This module contains a function to obfuscate log messages by redacting
 specified fields and a logging formatter for redaction.
 """
 
@@ -19,7 +19,7 @@ def filter_datum(fields: List[str], redaction: str, message: str,
         fields (List[str]): A list of fields to obfuscate.
         redaction (str): The string to replace the fields with.
         message (str): The log message that contains the fields.
-        separator (str): The character that separates fields in the log message.
+        separator (str): The character that separates fields in log message.
 
     Returns:
         str: The log message with specified fields obfuscated.
