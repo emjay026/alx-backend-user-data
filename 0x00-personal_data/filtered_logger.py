@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-This module contains a function to obfuscate log messages by redacting
+This module contains functions to obfuscate log messages by redacting
 specified fields and a logging formatter for redaction.
 """
 
@@ -45,3 +45,26 @@ class RedactingFormatter(logging.Formatter):
         """Format the log record with redacted fields."""
         record.msg = filter_datum(self.fields, self.REDACTION, record.msg, ";")
         return super().format(record)
+
+
+# Constant for PII fields
+PII_FIELDS: tuple = ("email", "ssn", "password", "phone", "last_login")
+
+
+def get_logger() -> logging.Logger:
+    """
+    Creates and configures a logger for user data.
+
+    Returns:
+        logging.Logger: Configured logger object.
+    """
+    logger = logging.getLogger("user_data")
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+
+    handler = logging.StreamHandler()
+    formatter = RedactingFormatter(fields=PII_FIELDS)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+    return logger
