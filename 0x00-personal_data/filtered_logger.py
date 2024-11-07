@@ -7,7 +7,10 @@ specified fields and a logging formatter for redaction.
 
 import logging
 import re
+import os
+import mysql.connector
 from typing import List
+from mysql.connector import Error
 
 # Constant for PII fields
 PII_FIELDS: tuple = ("name", "email", "ssn", "password", "phone")
@@ -58,3 +61,33 @@ def get_logger() -> logging.Logger:
     logger.addHandler(handler)
 
     return logger
+
+
+def get_db():
+    """Function that returns a connector to the database."""
+
+    # Retrieve environment variables, with defaults
+    username = os.getenv('PERSONAL_DATA_DB_USERNAME', 'root')
+    password = os.getenv('PERSONAL_DATA_DB_PASSWORD', '')
+    host = os.getenv('PERSONAL_DATA_DB_HOST', 'localhost')
+    database = os.getenv('PERSONAL_DATA_DB_NAME')
+
+    # Check if the database name is set
+    if not database:
+        raise ValueError(
+            "The environment variable PERSONAL_DATA_DB_NAME is not set.")
+
+    try:
+        # Create a connection to the database
+        connection = mysql.connector.connect(
+            user=username,
+            password=password,
+            host=host,
+            database=database
+        )
+
+        if connection.is_connected():
+            return connection
+
+    except Error as e:
+        return None
