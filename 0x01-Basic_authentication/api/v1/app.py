@@ -19,7 +19,7 @@ auth = None
 # Load authentication type from environment variable
 auth_type = getenv("AUTH_TYPE")
 if auth_type == "basic_auth":
-    from auth.v1.auth.auth import BasicAuth
+    from api.v1.auth.basic_auth import BasicAuth
     auth = BasicAuth()
 else:
     from api.v1.auth.auth import Auth
