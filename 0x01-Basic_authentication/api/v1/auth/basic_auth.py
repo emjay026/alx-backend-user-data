@@ -79,17 +79,22 @@ class BasicAuth(Auth):
 
         Returns:
             tuple: A tuple containing the user email and the user password,
-                   or (None, None) if invalid.
+                or (None, None) if invalid.
         """
         if decoded_base64_authorization_header is None:
             return None, None
         if not isinstance(decoded_base64_authorization_header, str):
             return None, None
+
+        # Split the decoded string into email and password on the first colon
         if ":" not in decoded_base64_authorization_header:
             return None, None
 
-        # Split the decoded string into email and password
-        return decoded_base64_authorization_header.split(":", 1)
+        # This will split on the first occurrence of colon
+        user_email, user_pwd =\
+            decoded_base64_authorization_header.split(":", 1)
+
+        return user_email, user_pwd
 
     def user_object_from_credentials(self, user_email: str,
                                      user_pwd: str) -> UserType:
