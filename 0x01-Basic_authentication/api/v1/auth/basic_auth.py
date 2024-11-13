@@ -7,6 +7,10 @@ the Auth class to handle basic authentication methods.
 """
 import base64
 from api.v1.auth.auth import Auth
+from models.user import User
+from typing import TypeVar
+
+UserType = TypeVar('User', bound=User)
 
 
 class BasicAuth(Auth):
@@ -21,16 +25,16 @@ class BasicAuth(Auth):
                                             authorization_header: str)\
             -> str:
         """
-        Extract the Base64 part of the Authorization header for
-        Basic Authentication.
+        Extract the Base64 part of the Authorization header for Basic
+        Authentication.
 
         Args:
-            authorization_header (str): The value of the
-            Authorization header.
+            authorization_header (str): The value of the Authorization
+            header.
 
         Returns:
-            str: The Base64 part of the Authorization header, or
-            None if invalid.
+            str: The Base64 part of the Authorization header, or None if
+            invalid.
         """
         if authorization_header is None:
             return None
@@ -86,3 +90,36 @@ class BasicAuth(Auth):
 
         # Split the decoded string into email and password
         return decoded_base64_authorization_header.split(":", 1)
+
+    def user_object_from_credentials(self, user_email: str,
+                                     user_pwd: str) -> UserType:
+        """
+        Get the User instance based on the user email and password.
+
+        Args:
+            user_email (str): The user's email.
+            user_pwd (str): The user's password.
+
+        Returns:
+            User: The User instance or None if invalid credentials.
+        """
+        # Check for valid email and password
+        if user_email is None or not isinstance(user_email, str):
+            return None
+        if user_pwd is None or not isinstance(user_pwd, str):
+            return None
+
+        # Use the User class's search method to find a user by email
+        users = User.search({"email": user_email})
+
+        # Check if any user was found
+        if len(users) == 0:
+            return None  # No user found
+
+        user = users[0]  # Assume email is unique, get the first match
+
+        # Validate password
+        if not user.is_valid_password(user_pwd):
+            return None  # Invalid password
+
+        return user  # Return the User instance found
