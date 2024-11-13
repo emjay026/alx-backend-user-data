@@ -117,7 +117,7 @@ class BasicAuth(Auth):
 
         return user  # Return the User instance found
 
-    def current_user(self, request=None) -> UserType:
+    def current_user(self, request=None) -> TypeVar('User'):
         """
         Retrieve the current User instance from a request.
 
