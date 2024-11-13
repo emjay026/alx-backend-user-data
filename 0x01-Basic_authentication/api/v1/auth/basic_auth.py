@@ -1,14 +1,8 @@
-#!/usr/bin/env python3
-"""
-Module for managing Basic Authentication.
-
-This module provides the BasicAuth class, which extends
-the Auth class to handle basic authentication methods.
-"""
+# Ensure you have the proper imports at the top
 import base64
 from api.v1.auth.auth import Auth
 from models.user import User
-from typing import TypeVar
+from typing import TypeVar, Tuple
 
 UserType = TypeVar('User')
 
@@ -22,8 +16,7 @@ class BasicAuth(Auth):
     """
 
     def extract_base64_authorization_header(self,
-                                            authorization_header: str)\
-            -> str:
+                                            authorization_header: str) -> str:
         """
         Extract the Base64 part of the Authorization header for Basic
         Authentication.
@@ -69,7 +62,7 @@ class BasicAuth(Auth):
 
     def extract_user_credentials(self,
                                  decoded_base64_authorization_header: str)\
-            -> (str, str):
+            -> Tuple[str, str]:
         """
         Extract the user email and password from the Base64 decoded value.
 
@@ -92,7 +85,7 @@ class BasicAuth(Auth):
         return decoded_base64_authorization_header.split(":", 1)
 
     def user_object_from_credentials(self, user_email: str,
-                                     user_pwd: str) -> TypeVar('User'):
+                                     user_pwd: str) -> UserType:
         """
         Get the User instance based on the user email and password.
 
@@ -123,3 +116,34 @@ class BasicAuth(Auth):
             return None  # Invalid password
 
         return user  # Return the User instance found
+
+    def current_user(self, request=None) -> UserType:
+        """
+        Retrieve the current User instance from a request.
+
+        Args:
+            request: The HTTP request object.
+
+        Returns:
+            User: The User instance if found, or None if invalid.
+        """
+        if request is None:
+            return None
+
+        # Get the authorization header
+        auth_header = self.authorization_header(request)
+
+        # Extract the Base64 part from the header
+        base64_auth_header =\
+            self.extract_base64_authorization_header(auth_header)
+
+        # Decode the Base64 authorization header
+        decoded_auth_header =\
+            self.decode_base64_authorization_header(base64_auth_header)
+
+        # Extract email and password from the decoded string
+        user_email, user_pwd =\
+            self.extract_user_credentials(decoded_auth_header)
+
+        # Retrieve the User object based on email and password
+        return self.user_object_from_credentials(user_email, user_pwd)
