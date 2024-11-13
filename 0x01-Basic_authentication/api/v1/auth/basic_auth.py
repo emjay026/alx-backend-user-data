@@ -1,4 +1,11 @@
-# Ensure you have the proper imports at the top
+#!/usr/bin/env python3
+"""
+Module for managing Basic Authentication.
+
+This module provides the BasicAuth class, which extends
+the Auth class to handle basic authentication methods.
+"""
+
 import base64
 from api.v1.auth.auth import Auth
 from models.user import User
