@@ -96,38 +96,28 @@ class BasicAuth(Auth):
 
         return user_email, user_pwd
 
-    def user_object_from_credentials(self, user_email: str,
-                                     user_pwd: str) -> UserType:
-        """
-        Get the User instance based on the user email and password.
+    def user_object_from_credentials(self, user_email: str, user_pwd: str)\
+            -> TypeVar('User'):
+        """Retrieve a User object based on provided email and password.
 
         Args:
-            user_email (str): The user's email.
-            user_pwd (str): The user's password.
+            user_email (str): User's email address.
+            user_pwd (str): User's password.
 
         Returns:
-            User: The User instance or None if invalid credentials.
+            User: The corresponding user object if authentication is
+            successful, None otherwise.
         """
-        # Check for valid email and password
-        if user_email is None or not isinstance(user_email, str):
-            return None
-        if user_pwd is None or not isinstance(user_pwd, str):
-            return None
-
-        # Use the User class's search method to find a user by email
-        users = User.search({"email": user_email})
-
-        # Check if any user was found
-        if len(users) == 0:
-            return None  # No user found
-
-        user = users[0]  # Assume email is unique, get the first match
-
-        # Validate password
-        if not user.is_valid_password(user_pwd):
-            return None  # Invalid password
-
-        return user  # Return the User instance found
+        if type(user_email) is str and type(user_pwd) is str:
+            try:
+                users = User.search({'email': user_email})
+            except Exception:
+                return None
+            if len(users) <= 0:
+                return None
+            if users[0].is_valid_password(user_pwd):
+                return users[0]
+        return None
 
     def current_user(self, request=None) -> TypeVar('User'):
         """
