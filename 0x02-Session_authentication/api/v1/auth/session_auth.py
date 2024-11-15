@@ -2,7 +2,7 @@
 """
 Module for managing session-based API authentication.
 
-This module provides a class SessionAuth that handles session-related 
+This module provides a class SessionAuth that handles session-related
 authentication tasks, inheriting from the Auth class.
 """
 
