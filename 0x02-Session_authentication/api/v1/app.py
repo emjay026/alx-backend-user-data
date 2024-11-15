@@ -22,6 +22,9 @@ if auth_type == "basic_auth":
 elif auth_type == "session_auth":
     from api.v1.auth.session_auth import SessionAuth  # Import SessionAuth
     auth = SessionAuth()  # Create an instance of SessionAuth
+elif auth_type == "session_exp_auth":
+    from api.v1.auth.session_exp_auth import SessionExpAuth
+    auth = SessionExpAuth()  # Create an instance of SessionExpAuth
 else:
     from api.v1.auth.auth import Auth
     auth = Auth()
@@ -46,7 +49,7 @@ def before_request():
         return  # If the path does not require auth, do nothing
 
     # Check for authorization header and session cookie
-    if auth.authorization_header(request) is None\
+    if auth.authorization_header(request) is None \
             and auth.session_cookie(request) is None:
         abort(401)
 
