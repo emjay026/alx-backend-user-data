@@ -25,6 +25,9 @@ elif auth_type == "session_auth":
 elif auth_type == "session_exp_auth":
     from api.v1.auth.session_exp_auth import SessionExpAuth
     auth = SessionExpAuth()  # Create an instance of SessionExpAuth
+elif auth_type == "session_db_auth":  # New condition for SessionDBAuth
+    from api.v1.auth.session_db_auth import SessionDBAuth 
+    auth = SessionDBAuth()  # Create an instance of SessionDBAuth
 else:
     from api.v1.auth.auth import Auth
     auth = Auth()
