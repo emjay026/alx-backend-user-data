@@ -10,8 +10,9 @@ from api.v1.auth.auth import Auth  # Import the Auth class
 from flask import request
 from typing import TypeVar
 import uuid  # Import the uuid module to generate session IDs
+from models.user import User  # Import the User model
 
-User = TypeVar('User')
+UserType = TypeVar('User')
 
 
 class SessionAuth(Auth):
@@ -64,4 +65,35 @@ class SessionAuth(Auth):
             return None  # Return None if session_id is not a string
 
         # Use .get() to retrieve the User ID from the dictionary
-        return self.user_id_by_session_id.get(session_id)  # Return User ID
+        return self.user_id_by_session_id.get(session_id)  # Return the User ID
+
+    def current_user(self, request=None) -> UserType:
+        """
+        Overloaded method to retrieve the current User instance based on
+        session cookie.
+
+        Args:
+            request (flask.Request, optional): The request object.
+            Defaults to None.
+
+        Returns:
+            User: The User instance associated with the session cookie,
+            or None if not found.
+        """
+        if request is None:
+            return None  # Return None if request is None
+
+        # Get the session cookie value
+        session_id = self.session_cookie(request)
+
+        # Retrieve the User ID associated with the session ID
+        user_id = self.user_id_for_session_id(session_id)
+
+        if user_id is None:
+            return None  # Return None if no User ID found
+
+        # Retrieve the User instance from the database using the User ID
+        # Assuming User.get(...) will fetch the User instance
+        user = User.get(user_id)
+
+        return user  # Return the User instance
