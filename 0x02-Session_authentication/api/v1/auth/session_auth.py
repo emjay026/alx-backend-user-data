@@ -22,7 +22,8 @@ class SessionAuth(Auth):
     management functionality.
     """
 
-    user_id_by_session_id = {}  # Class attr. to store user IDs by session ID
+    # Class attribute to store user IDs by session ID
+    user_id_by_session_id = {}
 
     def __init__(self):
         """ Initialize the SessionAuth class """
@@ -93,7 +94,35 @@ class SessionAuth(Auth):
             return None  # Return None if no User ID found
 
         # Retrieve the User instance from the database using the User ID
-        # Assuming User.get(...) will fetch the User instance
         user = User.get(user_id)
 
         return user  # Return the User instance
+
+    def destroy_session(self, request=None) -> bool:
+        """
+        Destroy the user session / logout.
+
+        Args:
+            request (flask.Request, optional): The request object.
+            Defaults to None.
+
+        Returns:
+            bool: True if the session was destroyed, False otherwise.
+        """
+        if request is None:
+            return False  # Return False if request is None
+
+        # Get the Session ID from the cookie
+        session_id = self.session_cookie(request)
+        if session_id is None:  # Check if the session ID cookie exists
+            return False
+
+        # Check if the Session ID is linked to any User ID
+        user_id = self.user_id_for_session_id(session_id)
+        if user_id is None:
+            return False  # Session ID not found
+
+        # Remove the Session ID from the user_id_by_session_id dictionary
+        del self.user_id_by_session_id[session_id]
+
+        return True  # Indicate that the session was successfully destroyed

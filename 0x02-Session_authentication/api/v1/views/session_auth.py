@@ -3,10 +3,11 @@
 Module for handling session authentication routes.
 """
 
-from flask import jsonify, request
+from flask import jsonify, request, abort
 from models.user import User  # Import the User model
 import os  # To access environment variables
 from api.v1.views import app_views  # Import the blueprint
+from api.v1.app import auth  # Import the auth for session management
 
 
 @app_views.route('/auth_session/login', methods=['POST'], strict_slashes=False)
@@ -42,9 +43,6 @@ def login():
     if not user.is_valid_password(password):
         return jsonify({"error": "wrong password"}), 401  # Wrong password
 
-    # Import auth to create a session ID
-    from api.v1.app import auth  # Importing here to avoid circular imports
-
     # Create the session ID for the user
     session_id = auth.create_session(user.id)  # Assuming user.id is the ID
 
@@ -56,3 +54,21 @@ def login():
     response.set_cookie(session_name, session_id)  # Set the cookie
 
     return response  # Return response with user details and cookie
+
+
+@app_views.route('/auth_session/logout', methods=['DELETE'],
+                 strict_slashes=False)
+def logout():
+    """
+    DELETE /api/v1/auth_session/logout
+    Handle user logout by destroying the session.
+
+    Returns:
+        Empty JSON response if the logout was successful.
+    """
+    # Use the auth object to destroy the session
+    if not auth.destroy_session(request):
+        abort(404)  # If destroy_session returns False, abort with 404
+
+    # Return an empty JSON dictionary with status code 200
+    return jsonify({}), 200
