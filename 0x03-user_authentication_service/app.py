@@ -48,32 +48,33 @@ def register_user() -> jsonify:
         return jsonify({"message": "email already registered"}), 400
 
 
-@app.route('/sessions', methods=['POST'])
-def login() -> jsonify:
-    """Login a user and create a session.
+@app.route('/sessions', methods=['DELETE'])
+def logout() -> tuple[str, int]:
+    """Logout a user by destroying their session.
 
     Returns:
-        jsonify: A JSON response indicating the result of the login.
+        tuple[str, int]: A tuple containing a message (or empty string)
+        and the HTTP status.
     """
-    email: str = request.form.get('email') or ''
-    password: str = request.form.get('password') or ''
+    # Get session ID from cookies
+    session_id: str | None = request.cookies.get("session_id")
 
-    # Verify that both fields are provided
-    if not email or not password:
-        return jsonify({"message": "email and password required"}), 400
+    # Handle case where session ID is missing
+    if session_id is None:
+        return jsonify({"message": "session ID required"}), 400
 
-    # Validate login credentials
-    if not AUTH.valid_login(email=email, password=password):
-        abort(401)  # Respond with a 401 HTTP status for unauthenticated access
+    # Find the user associated with the session ID
+    user = AUTH.get_user_from_session_id(session_id)
 
-    # Create a new session for the user if login is successful
-    session_id = AUTH.create_session(email)
+    # User does not exist, respond with 403 only
+    if user is None:
+        return '', 403
 
-    # Set the session ID in a cookie
-    response = jsonify({"email": email, "message": "logged in"})
-    response.set_cookie("session_id", session_id)
+    # User exists, destroy the session
+    AUTH.destroy_session(user.id)
 
-    return response
+    # Respond with a success message and 200 status
+    return jsonify({"message": "logged out"}), 200
 
 
 @app.route('/sessions', methods=['DELETE'])
