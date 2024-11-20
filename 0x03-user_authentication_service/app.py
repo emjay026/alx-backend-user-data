@@ -5,7 +5,7 @@ Flask application to manage user registration.
 This application sets up an endpoint to register users through a JSON API.
 """
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, abort
 from auth import Auth
 
 # Initialize a Flask application
@@ -43,10 +43,37 @@ def register_user() -> jsonify:
     try:
         # Register the user through the AUTH object
         AUTH.register_user(email=email, password=password)
-        return jsonify({"email": email, "message": "user created"}), 200
-    except ValueError as e:
-        # If user already exists raise a ValueError
+        return jsonify({"email": email, "message": "user created"}), 201
+    except ValueError:
         return jsonify({"message": "email already registered"}), 400
+
+
+@app.route('/sessions', methods=['POST'])
+def login() -> jsonify:
+    """Login a user and create a session.
+
+    Returns:
+        jsonify: A JSON response indicating the result of the login.
+    """
+    email: str = request.form.get('email') or ''
+    password: str = request.form.get('password') or ''
+
+    # Verify that both fields are provided
+    if not email or not password:
+        return jsonify({"message": "email and password required"}), 400
+
+    # Validate login credentials
+    if not AUTH.valid_login(email=email, password=password):
+        abort(401)  # Respond with a 401 HTTP status for unauthenticated access
+
+    # Create a new session for the user if login is successful
+    session_id = AUTH.create_session(email)
+
+    # Set the session ID in a cookie
+    response = jsonify({"email": email, "message": "logged in"})
+    response.set_cookie("session_id", session_id)
+
+    return response
 
 
 if __name__ == "__main__":
