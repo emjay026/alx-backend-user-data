@@ -13,8 +13,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 
 class Auth:
-    """Auth class to interact with the authentication database.
-    """
+    """Auth class to interact with the authentication database."""
 
     def __init__(self):
         self._db = DB()
@@ -59,6 +58,28 @@ class Auth:
                                   user.hashed_password)
         except NoResultFound:
             return False
+
+    def create_session(self, email: str) -> str:
+        """Create a session for the user.
+
+        Args:
+            email (str): The email of the user.
+
+        Returns:
+            str: The session ID for the user.
+
+        Raises:
+            NoResultFound: If no user is found with the given email.
+        """
+        try:
+            user = self._db.find_user_by(email=email)  # Find the user by email
+        except NoResultFound:
+            return None  # Handle the case where user does not exist
+
+        session_id = _generate_uuid()  # Generate a new UUID for the session
+        user.session_id = session_id  # Assign the session ID to the user
+        self._db._session.commit()  # Save changes to the database
+        return session_id
 
 
 def _hash_password(password: str) -> bytes:
