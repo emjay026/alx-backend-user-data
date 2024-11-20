@@ -16,17 +16,25 @@ AUTH = Auth()
 
 
 @app.route('/', methods=['GET'])
-def welcome():
-    """Return a welcome message in JSON format."""
+def welcome() -> jsonify:
+    """Return a welcome message in JSON format.
+
+    Returns:
+        jsonify: A JSON response with a welcome message.
+    """
     return jsonify({"message": "Bienvenue"})
 
 
 @app.route('/users', methods=['POST'])
-def register_user():
-    """Register a new user with email and password."""
+def register_user() -> jsonify:
+    """Register a new user with email and password.
+
+    Returns:
+        jsonify: A JSON response indicating the result of the registration.
+    """
     # Expect 'email' and 'password' in form data
-    email = request.form.get('email')
-    password = request.form.get('password')
+    email: str = request.form.get('email') or ''
+    password: str = request.form.get('password') or ''
 
     # Check if both fields are provided
     if not email or not password:
@@ -35,7 +43,7 @@ def register_user():
     try:
         # Register the user through the AUTH object
         AUTH.register_user(email=email, password=password)
-        return jsonify({"email": email, "message": "user created"}), 201
+        return jsonify({"email": email, "message": "user created"}), 200
     except ValueError as e:
         # If user already exists raise a ValueError
         return jsonify({"message": "email already registered"}), 400
