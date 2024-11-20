@@ -6,8 +6,9 @@ This module provides functions for hashing passwords securely using bcrypt.
 """
 
 import bcrypt
-from db import DB, NoResultFound
+from db import DB
 from user import User  # Ensure to import the User model
+from sqlalchemy.orm.exc import NoResultFound
 
 
 class Auth:
@@ -40,6 +41,23 @@ class Auth:
             new_user = self._db.add_user(email=email,
                                          hashed_password=hashed_password)
             return new_user
+
+    def valid_login(self, email: str, password: str) -> bool:
+        """Validate the user's login credentials.
+
+        Args:
+            email (str): The email of the user.
+            password (str): The password of the user.
+
+        Returns:
+            bool: True if login is valid, False otherwise.
+        """
+        try:
+            user = self._db.find_user_by(email=email)
+            return bcrypt.checkpw(password.encode('utf-8'),
+                                  user.hashed_password)
+        except NoResultFound:
+            return False
 
 
 def _hash_password(password: str) -> bytes:
