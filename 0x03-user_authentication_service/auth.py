@@ -60,14 +60,6 @@ class Auth:
         except NoResultFound:
             return False
 
-    def _generate_uuid(self) -> str:
-        """Generate and return a new UUID as a string.
-
-        Returns:
-            str: A string representation of a new UUID.
-        """
-        return str(uuid.uuid4())  # Generate a new UUID and return as string
-
 
 def _hash_password(password: str) -> bytes:
     """Hash a password using bcrypt with a generated salt.
@@ -86,3 +78,12 @@ def _hash_password(password: str) -> bytes:
     hashed_password = bcrypt.hashpw(password_bytes, salt)
 
     return hashed_password
+
+
+def _generate_uuid() -> str:
+    """Generate and return a new UUID as a string.
+
+    Returns:
+        str: A string representation of a new UUID.
+    """
+    return str(uuid.uuid4())
