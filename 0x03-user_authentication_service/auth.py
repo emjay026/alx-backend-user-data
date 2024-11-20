@@ -100,6 +100,22 @@ class Auth:
         except NoResultFound:
             return None  # If no user is found, return None
 
+    def destroy_session(self, user_id: int) -> None:
+        """Destroy the user's session by updating the session ID to None.
+
+        Args:
+            user_id (int): The ID of the user whose session is to be destroyed.
+
+        Returns:
+            None
+        """
+        try:
+            user = self._db.find_user_by(id=user_id)  # Find user by user_id
+            user.session_id = None  # Set the session ID to None
+            self._db._session.commit()  # Commit the changes to the database
+        except NoResultFound:
+            pass  # If no user is found, do nothing
+
 
 def _hash_password(password: str) -> bytes:
     """Hash a password using bcrypt with a generated salt.
