@@ -86,19 +86,21 @@ def logout() -> jsonify:
     # Get session ID from cookies
     session_id = request.cookies.get("session_id")
 
-    if not session_id:
-        return jsonify({"message": "session ID required"}), 400
+    if session_id is None:
+        # Handle the case where session ID is missing
+        return '', 403
 
-    # Find the user by session ID
+    # Find the user associated with the session ID
     user = AUTH.get_user_from_session_id(session_id)
 
     if user is None:
-        # User does not exist
-        return jsonify({"message": "user not found"}), 403
+        # User does not exist, respond with 403
+        return '', 403
 
-    AUTH.destroy_session(user.id)  # Destroy the user's session
+    # User exists, destroy the session
+    AUTH.destroy_session(user.id)
 
-    # Redirect to the welcome message (GET /)
+    # Respond with a success message and redirect to GET /
     return jsonify({"message": "logged out"}), 200
 
 
