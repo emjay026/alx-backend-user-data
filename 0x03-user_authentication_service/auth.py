@@ -6,6 +6,7 @@ This module provides functions for hashing passwords securely using bcrypt.
 """
 
 import bcrypt
+import uuid  # Import the uuid module
 from db import DB
 from user import User  # Ensure to import the User model
 from sqlalchemy.orm.exc import NoResultFound
@@ -58,6 +59,14 @@ class Auth:
                                   user.hashed_password)
         except NoResultFound:
             return False
+
+    def _generate_uuid(self) -> str:
+        """Generate and return a new UUID as a string.
+
+        Returns:
+            str: A string representation of a new UUID.
+        """
+        return str(uuid.uuid4())  # Generate a new UUID and return as string
 
 
 def _hash_password(password: str) -> bytes:
