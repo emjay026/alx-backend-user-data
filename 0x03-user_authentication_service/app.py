@@ -78,28 +78,28 @@ def login() -> jsonify:
 
 @app.route('/sessions', methods=['DELETE'])
 def logout() -> jsonify:
-    """Logout a user by destroying the session.
+    """Logout a user by destroying their session.
 
     Returns:
         jsonify: A JSON response indicating the result of the logout.
     """
-    # Get the session ID from cookies
-    session_id = request.cookies.get('session_id')
+    # Get session ID from cookies
+    session_id = request.cookies.get("session_id")
 
-    # Check if a session ID is provided
     if not session_id:
-        return jsonify({"message": "not logged in"}), 403
+        return jsonify({"message": "session ID required"}), 400
 
-    # Attempt to retrieve the user associated with the session ID
+    # Find the user by session ID
     user = AUTH.get_user_from_session_id(session_id)
 
-    if user:
-        # If the user exists, destroy the session
-        AUTH.destroy_session(user.id)
-        return jsonify({"message": "logged out"}), 200
+    if user is None:
+        # User does not exist
+        return jsonify({"message": "user not found"}), 403
 
-    # If the user does not exist, respond with 403 status
-    return jsonify({"message": "session does not exist"}), 403
+    AUTH.destroy_session(user.id)  # Destroy the user's session
+
+    # Redirect to the welcome message (GET /)
+    return jsonify({"message": "logged out"}), 200
 
 
 if __name__ == "__main__":
