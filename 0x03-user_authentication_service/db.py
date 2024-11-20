@@ -72,3 +72,25 @@ class DB:
         except Exception as e:
             raise InvalidRequestError("Invalid query parameters provided.")\
                 from e
+
+    def update_user(self, user_id: int, **kwargs) -> None:
+        """Update a user's attributes in the database.
+
+        Args:
+            user_id (int): The ID of the user to be updated.
+            **kwargs: The user's attributes to update.
+
+        Raises:
+            NoResultFound: If no user is found with the provided user_id.
+            ValueError: If an invalid attribute is provided for update.
+        """
+        user = self.find_user_by(id=user_id)
+
+        valid_attributes = {attr.name for attr in User.__table__.columns}
+
+        for key, value in kwargs.items():
+            if key not in valid_attributes:
+                raise ValueError(f"Invalid attribute: {key}")
+            setattr(user, key, value)
+
+        self._session.commit()
