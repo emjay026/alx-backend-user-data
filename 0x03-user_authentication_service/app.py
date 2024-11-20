@@ -5,7 +5,7 @@ Flask application to manage user registration.
 This application sets up an endpoint to register users through a JSON API.
 """
 
-from flask import Flask, jsonify, request, abort
+from flask import Flask, jsonify, request, abort, redirect
 from auth import Auth
 
 # Initialize a Flask application
@@ -48,37 +48,36 @@ def register_user() -> jsonify:
         return jsonify({"message": "email already registered"}), 400
 
 
-@app.route('/sessions', methods=['DELETE'])
-def logout() -> tuple[str, int]:
-    """Logout a user by destroying their session.
+@app.route('/sessions', methods=['POST'])
+def login() -> jsonify:
+    """Login a user and create a session.
 
     Returns:
-        tuple[str, int]: A tuple containing a message (or empty string)
-        and the HTTP status.
+        jsonify: A JSON response indicating the result of the login.
     """
-    # Get session ID from cookies
-    session_id: str | None = request.cookies.get("session_id")
+    email: str = request.form.get('email') or ''
+    password: str = request.form.get('password') or ''
 
-    # Handle case where session ID is missing
-    if session_id is None:
-        return jsonify({"message": "session ID required"}), 400
+    # Verify that both fields are provided
+    if not email or not password:
+        return jsonify({"message": "email and password required"}), 400
 
-    # Find the user associated with the session ID
-    user = AUTH.get_user_from_session_id(session_id)
+    # Validate login credentials
+    if not AUTH.valid_login(email=email, password=password):
+        abort(401)  # Respond with a 401 HTTP status for unauthenticated access
 
-    # User does not exist, respond with 403 only
-    if user is None:
-        return '', 403
+    # Create a new session for the user if login is successful
+    session_id = AUTH.create_session(email)
 
-    # User exists, destroy the session
-    AUTH.destroy_session(user.id)
+    # Set the session ID in a cookie
+    response = jsonify({"email": email, "message": "logged in"})
+    response.set_cookie("session_id", session_id)
 
-    # Respond with a success message and 200 status
-    return jsonify({"message": "logged out"}), 200
+    return response
 
 
 @app.route('/sessions', methods=['DELETE'])
-def logout() -> jsonify:
+def logout() -> str:
     """Logout a user by destroying their session.
 
     Returns:
@@ -89,20 +88,20 @@ def logout() -> jsonify:
 
     if session_id is None:
         # Handle the case where session ID is missing
-        return '', 403
+        abort(403)
 
     # Find the user associated with the session ID
     user = AUTH.get_user_from_session_id(session_id)
 
     if user is None:
         # User does not exist, respond with 403
-        return '', 403
+        abort(403)
 
     # User exists, destroy the session
     AUTH.destroy_session(user.id)
 
     # Respond with a success message and redirect to GET /
-    return jsonify({"message": "logged out"}), 200
+    return redirect("/")
 
 
 if __name__ == "__main__":
