@@ -8,6 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 from user import User, Base
 
+
 class DB:
     """DB class to manage the SQLite database.
 
@@ -17,7 +18,7 @@ class DB:
 
     def __init__(self) -> None:
         """Initialize a new DB instance."""
-        self._engine = create_engine("sqlite:///a.db", echo=False)
+        self._engine = create_engine("sqlite:///a.db", echo=True)
         Base.metadata.drop_all(self._engine)
         Base.metadata.create_all(self._engine)
         self.__session: Session | None = None
