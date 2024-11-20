@@ -81,6 +81,25 @@ class Auth:
         self._db._session.commit()  # Save changes to the database
         return session_id
 
+    def get_user_from_session_id(self, session_id: str) -> User:
+        """Retrieve a user from the database using their session ID.
+
+        Args:
+            session_id (str): The session ID of the user.
+
+        Returns:
+            User or None: The User object if found, None otherwise.
+        """
+        if session_id is None:
+            return None  # Return None if session_id is None
+
+        try:
+            # Attempt to find the user by session ID
+            user = self._db.find_user_by(session_id=session_id)
+            return user  # Return the user if found
+        except NoResultFound:
+            return None  # If no user is found, return None
+
 
 def _hash_password(password: str) -> bytes:
     """Hash a password using bcrypt with a generated salt.
